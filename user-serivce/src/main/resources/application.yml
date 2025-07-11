@@ -1,0 +1,17 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/userdb
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jpa:
+      show-sql: true
+      hibernate:
+        ddl-auto: none  # khong de java t? ??ng t?o b?ng, cot, v.v (thay vào ?ó, s? d?ng các cau lenh SQL ?? t?o bang, cot, v.v)
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.MySQL8Dialect
+          format_sql: true
