@@ -10,12 +10,41 @@ spring:
       server:
         webflux:
           routes:
+            #         - Neu cau hinh cung nhu vay (localhost:8081 hoac 8082,...)
+            #         - API Gateway phai biet chinh xac dia chi cua tung service
+            #         - Trong truong hop neu user-service thay doi port sang 8083 thi api-gateway se
+            #      khong tim thay user-service vi da thay doi port
+            #     ===> Do do Eureka ra doi, giup giai quyet van de tren bang cach dang ky len server Eureka
+            #     ===> Se khong con cau hinh cung nhu: localhost:8081 hay localhost:8082
+            #     ===> Ma thay vao do se la lb://user-service
+            #     ===> Eureka se tu map lb://user-service -> dung IP + port dang hoat dong cua user-service.
+            #     user-service ---> dang ky voi Eureka
+            #     product-service ---> dang ky voi Eureka
+            #     api-gateway ---> hoi Eureka: "user-service o dau?"
+
+#            - id: user-service
+#              uri: http://localhost:8081
+#              predicates:
+#                - Path=/api/users/**
+#
+#            - id: order-service
+#              uri: http://localhost:8082
+#              predicates:
+#                - Path=/api/orders/**
+
+# ========> Chuyen sang dang nhu nay
+#           [lb://"] moi kich hoat duoc tinh nang load-balancing + discovery qua Eureka
             - id: user-service
-              uri: http://localhost:8081
+              uri: lb://user-service
               predicates:
                 - Path=/api/users/**
 
             - id: order-service
-              uri: http://localhost:8082
+              uri: lb://order-service
               predicates:
                 - Path=/api/orders/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka

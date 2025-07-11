@@ -2,6 +2,8 @@ server:
   port: 8082
 
 spring:
+  application:
+    name: order-service
   datasource:
     url: jdbc:mysql://localhost:3306/orderdb
     username: root
@@ -15,3 +17,14 @@ spring:
         hibernate:
           dialect: org.hibernate.dialect.MySQL8Dialect
           format_sql: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  # Eureka client hien tai dang dang ky ten host cua may (DESKTOP-EUE89QE.mshome.net) nhung DNS khong the phan giai ten do
+  # --> dan den loi
+  # Giai phap nhu ben duoi: Su dung dia chi IP hoac localhost khi cau hinh Eureka client
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
