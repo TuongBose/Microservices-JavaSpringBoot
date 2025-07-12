@@ -1,0 +1,2 @@
+Open cmd here:
+cmd: docker-compose up -d

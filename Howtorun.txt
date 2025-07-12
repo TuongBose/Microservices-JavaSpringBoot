@@ -1,4 +1,8 @@
+Steps run microservices:
 discovery-server --> api-gateway --> services
+
+Steps shutdown microservices don't error or warning:
+services --> api-gateway --> discovery-server
 
 command prompt redis docker:
 ============= docker --version : Kiểm tra đã có docker chưa
