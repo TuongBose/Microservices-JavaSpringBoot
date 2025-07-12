@@ -1,1 +1,29 @@
 discovery-server --> api-gateway --> services
+
+command prompt redis docker:
+============= docker --version : Kiểm tra đã có docker chưa
+============= docker run --name redis-dev -p 6379:6379 -d redis : Chạy redis container
+
+Giải thích:
+
+Tham số	Ý nghĩa
+--name redis-dev	Đặt tên container là redis-dev
+-p 6379:6379		Mở cổng 6379 (mặc định của Redis)
+-d redis		Chạy image Redis chính thức ở chế độ nền
+
+============= docker ps : Kiểm tra redis đã chạy chưa
+Kết quả:
+CONTAINER ID   IMAGE   COMMAND   ...   PORTS
+xxxxxxx         redis   ...     0.0.0.0:6379->6379/tcp
+
+============= docker exec -it redis-dev redis-cli : Kiểm tra kết nối
+============= ping : Redis sẽ trả về PONG ==> Đã kết nối thành công
+
+Stop và xóa container nếu cần
+# Dừng container
+docker stop redis-dev
+
+# Xóa container
+docker rm redis-dev
+
+

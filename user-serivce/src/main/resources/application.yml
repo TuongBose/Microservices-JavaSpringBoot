@@ -10,14 +10,21 @@ spring:
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jpa:
-      show-sql: true
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none  # Don't let Java automatically create tables, columns, ... (instead, use SQL statements to create tables, columns, ...)
+    properties:
       hibernate:
-        ddl-auto: none  # Don't let Java automatically create tables, columns, ... (instead, use SQL statements to create tables, columns, ...)
-      properties:
-        hibernate:
-          dialect: org.hibernate.dialect.MySQL8Dialect
-          format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+  cache:
+    type: redis
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 eureka:
   client:
