@@ -17,6 +17,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
+
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -25,6 +26,12 @@ spring:
       # Kafka gui du lieu dang JSON byte nen can chuyen object -> byte
       properties:
         spring.json.add.type.headers: false
+
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/demo-realm
 
 eureka:
   client:

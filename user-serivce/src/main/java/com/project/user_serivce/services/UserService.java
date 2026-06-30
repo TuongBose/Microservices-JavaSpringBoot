@@ -5,9 +5,11 @@ import com.project.user_serivce.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,5 +33,24 @@ public class UserService implements IUserService {
     public List<User> getAllUsers() {
         System.out.println("Fetching from DB...");
         return userRepository.findAll();
+    }
+
+    @Override
+    public User ensureUserExistsFromToken(Jwt jwt) {
+        String keycloakId = jwt.getSubject();
+        return userRepository.findByKeycloakId(keycloakId)
+                .orElseGet(()->{
+                    User user = User.builder()
+                            .keycloakId(keycloakId)
+                            .email(jwt.getClaim("email"))
+                            .name(jwt.getClaim("preferred_username"))
+                            .build();
+                    return userRepository.save(user);
+                });
+    }
+
+    @Override
+    public Optional<User> getUserByKeycloakId(String keycloakId) {
+        return userRepository.findByKeycloakId(keycloakId);
     }
 }

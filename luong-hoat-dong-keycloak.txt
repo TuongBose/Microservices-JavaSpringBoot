@@ -1,0 +1,35 @@
+[Bước 1] Client đăng nhập Keycloak
+→ Gửi username/password đến Keycloak
+→ Nhận lại JWT (Access Token)
+
+[Bước 2] Client gọi API đặt hàng đến Order-Service
+→ Gửi POST /api/orders
+→ Header: Authorization: Bearer <JWT>
+
+[Bước 3] Order-Service xác thực token
+→ Spring Security tự động verify JWT bằng public key từ Keycloak
+→ Nếu hợp lệ, lưu JwtAuthenticationToken vào SecurityContext
+
+[Bước 4] Order-Service lấy `sub` từ token
+→ Dùng `auth.getToken().getSubject()` a sub (UUID của user trên Keycloak)
+
+[Bước 5] Gọi sang User-Service bằng Feign Client
+→ GET /api/users/keycloak/{sub}
+→ Feign interceptor tự động gắn lại JWT vào header
+
+[Bước 6] User-Service xác thực token từ header
+→ Spring Security trong user-service cũng verify JWT
+→ Nếu hợp lệ, giải mã ra claims: sub, email, preferred_username, ...
+
+[Bước 7] User-Service kiểm tra DB:
+→ Nếu tồn tại user có keycloak_id = sub => trả về user
+→ Nếu chưa có:
+    → Tạo user mới từ thông tin JWT (sub, email, preferred_username) 
+    → Lưu vào DB
+    → Trả về user
+
+[Bước 8] Order-Service nhận được UserDto
+→ order.setUserId(user.getId())
+→ Gọi orderRepository.save(order)
+
+[Bước 9] Trả về response tạo đơn hàng thành công cho Client

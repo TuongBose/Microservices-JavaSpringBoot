@@ -14,7 +14,9 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long userid;
+
+    @Column(name="user_id")
+    private Long userId;
     private String product;
     private Integer price;
 }

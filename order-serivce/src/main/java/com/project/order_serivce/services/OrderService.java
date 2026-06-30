@@ -33,7 +33,7 @@ public class OrderService implements IOrderService {
         OrderPlacedEvent orderPlacedEvent = OrderPlacedEvent
                 .builder()
                 .orderId(newOrder.getId())
-                .userId(newOrder.getUserid())
+                .userId(newOrder.getUserId())
                 .total(newOrder.getPrice())
                 .build();
 
@@ -47,7 +47,7 @@ public class OrderService implements IOrderService {
     public OrderResponse getOrderById(Long id) throws Exception {
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(()->new RuntimeException("OrderId does not exist"));
-        UserDTO userDTO = userClient.getUserById(existingOrder.getUserid());
+        UserDTO userDTO = userClient.getUserById(existingOrder.getUserId());
 
         return OrderResponse.fromOrderAndUserDTO(existingOrder,userDTO);
     }

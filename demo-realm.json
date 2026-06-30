@@ -1,0 +1,33 @@
+{
+    "realm": "demo-realm",
+    "enabled": true,
+    "clients": [
+        {
+            "clientId": "user-service",
+            "enabled": true,
+            "protocol": "openid-connect",
+            "publicClient": false,
+            "secret": "user-service-secret",
+            "redirectUris": [
+                "*"
+            ],
+            "standardFlowEnabled": true,
+            "directAccessGrantsEnabled": true
+        }
+    ],
+    "users": [
+        {
+            "username": "user1",
+            "email": "tuong@gmail.com",
+            "enabled": true,
+            "emailVerified": true,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "123456",
+                    "temporary": false
+                }
+            ]
+        }
+    ]
+}
