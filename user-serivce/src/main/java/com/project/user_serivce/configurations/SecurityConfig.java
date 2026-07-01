@@ -31,19 +31,19 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        // 👉 CHO PHÉP TRUY CẬP /actuator/prometheus mà không cần token
+                        // Allow get /actuator/prometheus don't need token
                         .requestMatchers("/actuator/prometheus").permitAll()
 
-                        // 👉 Tùy theo bạn có expose thêm gì nữa
+                        // Allow all actuator endpoints (like /actuator/health, /actuator/info) don't need token
                         .requestMatchers("/actuator/**").permitAll()
 
-                        // 👉 Các API khác yêu cầu xác thực (có token Keycloak)
+                        // APIs that require authentication
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(resource -> resource
-                        .jwt(Customizer.withDefaults()) // dùng JWT để xác thực token từ Keycloak
+                        .jwt(Customizer.withDefaults()) // use JWT for authentication from Keycloak
                 )
-                .csrf(AbstractHttpConfigurer::disable); // Tắt CSRF cho Prometheus (chỉ GET)
+                .csrf(AbstractHttpConfigurer::disable); // Turn off CSRF for prometheus (only GET methods)
 
         return http.build();
     }
