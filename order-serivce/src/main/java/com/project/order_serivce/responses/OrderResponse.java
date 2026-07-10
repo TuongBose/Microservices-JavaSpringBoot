@@ -13,7 +13,7 @@ public class OrderResponse {
     private Long id;
     private UserDTO userDTO;
     private String product;
-    private Integer price;
+    private Double price;
 
     public static OrderResponse fromOrderAndUserDTO (Order order, UserDTO userDTO){
         return OrderResponse

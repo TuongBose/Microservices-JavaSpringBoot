@@ -31,3 +31,9 @@ docker stop redis-dev
 docker rm redis-dev
 
 
+### Inventory-Golang
+Cài dependencies: go mod tidy
+Chạy 1 file: go run main.go
+Chạy project: go run .
+
+

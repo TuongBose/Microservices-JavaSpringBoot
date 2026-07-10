@@ -17,6 +17,16 @@ public class Order {
 
     @Column(name="user_id")
     private Long userId;
+
     private String product;
-    private Integer price;
+    private Double price;
+
+    @Column(name="product_id")
+    private Long productId;
+
+    private int quantity;
+    private Double total;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
 }

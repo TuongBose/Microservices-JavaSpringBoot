@@ -3,11 +3,12 @@ package com.project.order_serivce.events;
 import lombok.*;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class OrderPlacedEvent {
+@NoArgsConstructor
+public class OrderCancelledEvent {
     private Long orderId;
     private Long userId;
-    private Double total;
+    private Long productId;
+    private int quantity;
+    private String reason;
 }
