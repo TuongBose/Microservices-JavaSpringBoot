@@ -1,5 +1,6 @@
 package com.project.order_serivce.configurations;
 
+import com.project.order_serivce.events.consumers.InventoryFailedEvent;
 import com.project.order_serivce.events.consumers.PaymentCompletedEvent;
 import com.project.order_serivce.events.consumers.PaymentFailedEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -31,22 +32,22 @@ public class KafkaConsumerConfig {
     }
 
     // InventoryFailedEvent
-//    @Bean
-//    public ConsumerFactory<String, InventoryFailedEvent> inventoryFailedConsumerFactory() {
-//        return new DefaultKafkaConsumerFactory<>(
-//                baseProps("order-service-inventory-failed"),
-//                new StringDeserializer(),
-//                new JsonDeserializer<>(InventoryFailedEvent.class, false)
-//        );
-//    }
-//
-//    @Bean
-//    public ConcurrentKafkaListenerContainerFactory<String, InventoryFailedEvent> inventoryFailedKafkaListenerContainerFactory() {
-//        ConcurrentKafkaListenerContainerFactory<String, InventoryFailedEvent> factory =
-//                new ConcurrentKafkaListenerContainerFactory<>();
-//        factory.setConsumerFactory(inventoryFailedConsumerFactory());
-//        return factory;
-//    }
+    @Bean
+    public ConsumerFactory<String, InventoryFailedEvent> inventoryFailedConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(
+                baseProps("order-service-inventory-failed"),
+                new StringDeserializer(),
+                new JsonDeserializer<>(InventoryFailedEvent.class, false)
+        );
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, InventoryFailedEvent> inventoryFailedKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, InventoryFailedEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(inventoryFailedConsumerFactory());
+        return factory;
+    }
 
     // PaymentCompletedEvent
     @Bean

@@ -20,6 +20,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class OrderService implements IOrderService {
+    private static final String DEFAULT_CANCEL_REASON = "Order cancelled (unspecified reason)";
+
     private final OrderRepository orderRepository;
     private final UserClient userClient;
     private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
@@ -72,10 +74,10 @@ public class OrderService implements IOrderService {
     @Override
     public OrderResponse getOrderById(Long id) throws Exception {
         Order existingOrder = orderRepository.findById(id)
-                .orElseThrow(()->new RuntimeException("OrderId does not exist"));
+                .orElseThrow(() -> new RuntimeException("OrderId does not exist"));
         UserDTO userDTO = userClient.getUserById(existingOrder.getUserId());
 
-        return OrderResponse.fromOrderAndUserDTO(existingOrder,userDTO);
+        return OrderResponse.fromOrderAndUserDTO(existingOrder, userDTO);
     }
 
     @Override
@@ -83,14 +85,50 @@ public class OrderService implements IOrderService {
         return orderRepository.findAll();
     }
 
+//    @Override
+//    public void updateOrderStatus(Long orderId, OrderStatus status) {
+//        orderRepository.findById(orderId).ifPresent(order -> {
+//            order.setStatus(status);
+//            Order updated = orderRepository.save(order);
+//            System.out.println("OrderStatus updated: " + status);
+//
+//            // If the order status is COMPLETED, publish an OrderCompletedEvent
+//            if (status == OrderStatus.COMPLETED) {
+//                OrderCompletedEvent event = new OrderCompletedEvent(
+//                        updated.getId(),
+//                        updated.getUserId(),
+//                        status.name()
+//                );
+//                orderEventProducer.publishOrderCompletedEvent(event);
+//            }
+//
+//            // If Cancel then publish event cancelled and release stock
+//            if (status == OrderStatus.CANCELLED) {
+//                OrderCancelledEvent event = new OrderCancelledEvent(
+//                        updated.getId(),
+//                        updated.getUserId(),
+//                        updated.getProductId(),
+//                        updated.getQuantity(),
+//                        "Order cancelled (payment failed)"
+//                );
+//                orderEventProducer.publishOrderCancelledEvent(event);
+//            }
+//        });
+//    }
+
     @Override
     public void updateOrderStatus(Long orderId, OrderStatus status) {
+        updateOrderStatus(orderId, status, DEFAULT_CANCEL_REASON);
+        // default reason if not provided
+    }
+
+    @Override
+    public void updateOrderStatus(Long orderId, OrderStatus status, String reason) {
         orderRepository.findById(orderId).ifPresent(order -> {
             order.setStatus(status);
             Order updated = orderRepository.save(order);
-            System.out.println("OrderStatus updated: " + status);
+            System.out.println("Order status updated to: " + status);
 
-            // If the order status is COMPLETED, publish an OrderCompletedEvent
             if (status == OrderStatus.COMPLETED) {
                 OrderCompletedEvent event = new OrderCompletedEvent(
                         updated.getId(),
@@ -100,14 +138,13 @@ public class OrderService implements IOrderService {
                 orderEventProducer.publishOrderCompletedEvent(event);
             }
 
-            // If Cancel then publish event cancelled and release stock
             if (status == OrderStatus.CANCELLED) {
                 OrderCancelledEvent event = new OrderCancelledEvent(
                         updated.getId(),
                         updated.getUserId(),
                         updated.getProductId(),
                         updated.getQuantity(),
-                        "Order cancelled (payment failed)"
+                        reason != null ? reason : DEFAULT_CANCEL_REASON
                 );
                 orderEventProducer.publishOrderCancelledEvent(event);
             }

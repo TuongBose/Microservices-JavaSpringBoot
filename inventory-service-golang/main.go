@@ -132,7 +132,23 @@ func consumeOrderCancelled() {
 
 		log.Printf("Received OrderCancelledEvent: %+v\n", event)
 
-		// Release stock
+		// Check if the order has a reserved record in the reserved_orders table
+		var count int
+		err = db.QueryRow(context.Background(),
+			`SELECT COUNT(*) FROM reserved_orders WHERE order_id = $1 AND product_id = $2`,
+			event.OrderID, event.ProductID).Scan(&count)
+
+		if err != nil {
+			log.Println("Error checking reserved_orders:", err)
+			continue
+		}
+
+		if count == 0 {
+			log.Printf("Skip release for order %d never reserved stock\n", event.OrderID)
+			continue
+		}
+
+		// Process the release of stock back to inventory
 		_, err = db.Exec(context.Background(),
 			`UPDATE inventories SET quantity = quantity + $1, updated_at = $2 WHERE product_id = $3`,
 			event.Quantity, time.Now(), event.ProductID)
@@ -142,7 +158,12 @@ func consumeOrderCancelled() {
 			continue
 		}
 
-		log.Printf("Released %d units of product %d back to inventory due to order %d cancellation. Reason: %s\n",
+		// Delete the reserved record to avoid double release
+		_, _ = db.Exec(context.Background(),
+			`DELETE FROM reserved_orders WHERE order_id = $1 AND product_id = $2`,
+			event.OrderID, event.ProductID)
+
+		log.Printf("Release %d units of product %d back to inventory due to order %d cancellation. Reason: %s\n",
 			event.Quantity, event.ProductID, event.OrderID, event.Reason)
 	}
 }
@@ -182,16 +203,40 @@ func consumeOrderCreated() {
 		}
 
 		if quantity >= event.Quantity {
-			// Keep order (minus quantity temporarily)
-			_, err := db.Exec(context.Background(),
-				`UPDATE inventories SET quantity = quantity - $1 WHERE product_id=$2`,
-				event.Quantity, event.ProductID)
+			// keep order with condition atomic
+			res, err := db.Exec(context.Background(),
+				`UPDATE inventories 
+				SET quantity = quantity - $1, updated_at = $2 
+				WHERE product_id = $3 AND quantity >= $1`,
+				event.Quantity, time.Now(), event.ProductID)
+
 			if err != nil {
+				log.Println("Error keep order:", err)
 				publishInventoryFailed(event.OrderID, "Cannot reserve inventory")
 				continue
 			}
-			log.Println("Keep order successfully", event.OrderID)
+
+			rowsAffected := res.RowsAffected()
+			if rowsAffected == 0 {
+				log.Println("Not enough stock for order", event.OrderID)
+				publishInventoryFailed(event.OrderID, "Not enough stock")
+				continue
+			}
+
+			// Write to reserved_orders table to avoid double release
+			_, err = db.Exec(context.Background(),
+				`INSERT INTO reserved_orders (order_id, product_id, quantity) 
+				VALUES ($1, $2, $3)
+				ON CONFLICT (order_id, product_id) DO NOTHING`,
+				event.OrderID, event.ProductID, event.Quantity)
+			if err != nil {
+				log.Println("Error inserting into reserved_orders:", err)
+			}
+
+			// Notification reserve successful
+			log.Println("Keep order successful for order", event.OrderID)
 			publishInventoryReserved(event.OrderID, "Reserved successfully")
+
 		} else {
 			log.Println("Not enough stock for order", event.OrderID)
 			publishInventoryFailed(event.OrderID, "Not enough stock")
