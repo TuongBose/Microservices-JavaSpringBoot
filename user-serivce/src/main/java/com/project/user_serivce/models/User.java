@@ -19,6 +19,7 @@ public class User implements Serializable { // Bat buoc phai implements Serializ
     private String name;
     private String email;
     private String password;
+
     @Column(name = "keycloak_id")
     private String keycloakId;
 }
